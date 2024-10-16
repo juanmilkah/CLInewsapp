@@ -1,24 +1,10 @@
 use std::error::Error;
-use serde::Deserialize;
-use ureq;
+
+use clinews::{get_articles, Articles,};
 use colour::{dark_blue, yellow};
+use dotenv::dotenv;
 
-#[derive(Deserialize,Debug)]
-struct Articles{
-    articles: Vec<Article>
-}
-#[derive(Deserialize,Debug)]
-struct Article{
-    title:String,
-    url: String
-}
 
-fn get_articles(url:&str)->Result<Articles,Box<dyn Error>>{
-    let response = ureq::get(url).call()?.into_string()?;
-    let articles:Articles = serde_json::from_str(&response)?;
-    Ok(articles)
-    
-}
 fn render_articles(articles: &Articles){
     for a in &articles.articles{
         dark_blue!("> {}\n\n",a.title);
@@ -27,8 +13,15 @@ fn render_articles(articles: &Articles){
 }
 
 fn main()-> Result<(),Box<dyn Error>> {
-    let url = "https://newsapi.org/v2/everything?q=tesla&from=2024-09-15&sortBy=publishedAt&apiKey=6892d0355c8e48d29cf54eea94e9cfcd";
-    let articles = get_articles(url)?;
+    
+    dotenv()?;
+
+
+  let apikey= std::env::var("API_KEY")?;
+    
+    let url = "https://newsapi.org/v2/everything?q=apple&from=2024-10-15&to=2024-10-15&sortBy=popularity&apiKey=";
+    let url = format!("{}{}" , url, apikey);
+    let articles = get_articles(&url)?;
     render_articles(&articles);
    Ok(())
 }
